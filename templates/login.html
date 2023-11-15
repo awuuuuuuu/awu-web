@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../static/dist/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/login_register.css">
+
+    <script src="../static/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/dist/jigsaw.min.js"></script>
+    <script src="../static/dist/jquery/dist/jquery.min.js"></script>
+
+    <title>awu</title>
+</head>
+
+<body>
+    <div class="cover">
+        <video src="../static/audio/background.mp4" class="backend-vedio" autoplay="autoplay" loop="loop"
+            muted="muted"></video>
+
+        <div class="card login-card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="InputUsername" class="form-label">账号：</label>
+                    <input type="text" class="form-control" id="InputUsername" placeholder="用户名长度为2~8个字符">
+                </div>
+                <div class="mb-3">
+                    <label for="InputPassword" class="form-label">密码：</label>
+                    <input type="password" class="form-control" id="InputPassword" placeholder="密码长度为6~18个字符">
+                </div>
+                <div id="captcha"></div>
+                <div id="msg"></div>
+                <button class="btn btn-outline-primary login-btn" onclick="login()">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let captcha = document.getElementById('captcha')
+        let username = document.getElementById("InputUsername")
+        let password = document.getElementById("InputPassword")
+        let msg = document.getElementById("msg")
+        let captcha_flag = 0
+
+        const login = () => {
+            if (!(username.value.length >= 2 && username.value.length <= 6)) {
+                window.alert("用户名长度为2~8个字符")
+                return
+            }
+
+            if (!(password.value.length >= 6 && password.value.length <= 18)) {
+                window.alert("密码长度为6~18个字符")
+                return
+            }
+
+            if (captcha_flag === 0) {
+                window.alert("请先通过滑动验证码")
+                return
+            }
+
+            $.ajax({
+                url: '/Login',
+                type: 'POST',
+                data: JSON.stringify({
+                    'username': username.value,
+                    'password': password.value,
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    console.log(res);
+                    if (res[0].error_message === "success") {
+                        console.log("success");
+                        window.alert("登录成功")
+                        window.location.replace("/")
+
+                    } else {
+                        window.alert("登录失败请稍后再试。")
+                    }
+                },
+                error: function (res) {
+                    console.log("error")
+                    console.log(res);
+                    window.alert("登录失败请稍后再试。")
+                }
+            })
+        }
+
+        jigsaw.init({
+            el: document.getElementById('captcha'),
+            onSuccess: function () {
+                //验证成功的回调
+                captcha_flag = 1
+                msg.innerHTML = "验证成功"
+            },
+        })
+
+    </script>
+</body>
+
+</html>

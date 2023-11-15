@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../static/dist/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/index.css">
+
+    <script src="../static/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/dist/jquery/dist/jquery.min.js"></script>
+
+    <title>awu</title>
+</head>
+
+<body>
+    <div class="cover">
+        <video src="../static/audio/background.mp4" class="backend-vedio" autoplay="autoplay" loop="loop"
+            muted="muted"></video>
+
+        <div class="card">
+            <div class="card-body">
+                <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                    <div class="container-fluid">
+                        <img src="../static/images/logo.svg" alt="awu" width="80" height="68">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link fs-5" href="/">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link fs-5" href="/student">database</a>
+                                </li>
+                            </ul>
+
+                            {% if session['is_login'] %}
+                            <ul class="navbar-nav mb-2 mb-lg-0 d-flex">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle fs-5" href="#" role="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{session['username']}}
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <button class="dropdown-item fs-5" onclick="logout()">退出</button>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            {% else %}
+                            <ul class="navbar-nav mb-2 mb-lg-0 d-flex">
+                                <li class="nav-item d-flex">
+                                    <a class="nav-link fs-5" href="/login">登录</a>
+                                </li>
+                                <li class="nav-item ">
+                                    <a class="nav-link fs-5" href="/register">注册</a>
+                                </li>
+                            </ul>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </nav>
+
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="text-center">
+                            <img src="../static/images/logo.svg" alt="awu" width="500" height="480">
+                            <h1 style="margin-top: -50px;">awu 的 web 大作业</h1>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const logout = () => {
+            $.ajax({
+                url: '/logout',
+                type: 'POST',
+                data: JSON.stringify({
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    console.log(res);
+                    window.location.replace("/")
+                },
+                error: function (res) {
+                    console.log("error")
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

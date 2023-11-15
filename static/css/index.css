@@ -1,0 +1,43 @@
+.card{
+    margin: 2em;
+    height: 100%;
+}
+
+.cover{
+    height: 100%;
+    width: 100%;
+}
+
+.backend-vedio{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.right{
+    text-align:right;
+}
+
+#go_to_database{
+    border: none;
+    background-color: #F8F9FA;
+}
+
+.btn-big{
+    width: 80%;
+}
+
+.form-check-label{
+    margin-left: -1.5rem;
+}
+
+.edit-table-item{
+    width: 6.6rem;
+}
+
+.none-btn{
+    display: none;
+}

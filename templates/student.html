@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../static/dist/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/index.css">
+
+    <script src="../static/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/dist/jquery/dist/jquery.min.js"></script>
+
+    <title>awu</title>
+</head>
+
+<body>
+    <script>
+
+    </script>
+    <div class="cover">
+        <video src="../static/audio/background.mp4" class="backend-vedio" autoplay="autoplay" loop="loop"
+            muted="muted"></video>
+
+        <div class="card">
+            <div class="card-body">
+                <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                    <div class="container-fluid">
+                        <img src="../static/images/logo.svg" alt="awu" width="80" height="68">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link fs-5" href="/" id="do_to_home">Home</a>
+                                </li>
+                                <li class="nav-item ">
+                                    <a class="nav-link fs-5" href="/student">database</a>
+                                </li>
+                            </ul>
+
+                            {% if session['is_login'] %}
+                            <!-- 用户已登录时显示的内容 -->
+                            <ul class="navbar-nav mb-2 mb-lg-0 d-flex">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle fs-5" href="#" role="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{session['username']}}
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <button class="dropdown-item fs-5" onclick="logout()">退出</button>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            {% else %}
+                            <!-- 用户未登录时显示的内容 -->
+                            <ul class="navbar-nav mb-2 mb-lg-0 d-flex">
+                                <li class="nav-item d-flex">
+                                    <a class="nav-link fs-5" href="/login">登录</a>
+                                </li>
+                                <li class="nav-item ">
+                                    <a class="nav-link fs-5" href="/register">注册</a>
+                                </li>
+                            </ul>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </nav>
+
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table border-success table-success table-striped table-hover ">
+                            <thead class="text-center">
+                                <tr>
+                                    <th scope="col">学生编号 </th>
+                                    <th scope="col">姓名</th>
+                                    <th scope="col">性别</th>
+                                    <th scope="col">年龄</th>
+                                    <th scope="col">出生地</th>
+                                    <th scope="col">职业编号</th>
+                                    <th scope="col">职业</th>
+                                    <th scope="col">
+                                        <button type="button" class="btn btn-warning" id="group_modify"
+                                            onclick="modify_some_students()">批量修改</button>
+                                        <button type="button" class="btn btn-success none-btn" id="group_save"
+                                            onclick="save_some_students()">保存</button>
+                                    </th>
+                                    <th scope="col">
+                                        <button type="button" class="btn btn-danger"
+                                            onclick="delete_some_students()">批量删除</button>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center" id="display">
+                            </tbody>
+                        </table>
+                        <nav aria-label="...">
+                            <ul class="pagination" style="float: right;" id="pagination">
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let current_page = 1;
+        let students = []
+        let itemsPerPage = 10
+        let tot_len
+        let display = document.getElementById("display")
+
+        const modify_some_students = () => {
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let student_list = Array.from(checkboxes).map(function (checkbox) {
+                return checkbox.value;
+            });
+            for (let id of student_list) {
+                create_input(id)
+            }
+            let modify_btn = document.getElementById("group_modify")
+            let save_modify_btn = document.getElementById("group_save")
+            modify_btn.style.display = "none"
+            save_modify_btn.style.display = "inline-block"
+        }
+
+        const save_some_students = () => {
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let student_list = Array.from(checkboxes).map(function (checkbox) {
+                return checkbox.value;
+            });
+            let res = window.confirm("确定修改编号为 " + student_list + "的学生吗？")
+            if (res) {
+                let new_student_list = {}
+                for (let id of student_list)
+                    new_student_list[id] = get_modify_student_detail(id)
+
+                console.log(new_student_list);
+                $.ajax({
+                    url: '/modify_some_students',
+                    type: 'POST',
+                    data: JSON.stringify(new_student_list),
+                    dataType: 'json',
+                    success: function (res) {
+                        console.log("success")
+                        window.alert(res['message'])
+                        pull_page(current_page)
+                    },
+                    error: function (res) {
+                        console.log("error")
+                    }
+                })
+            }
+
+            let modify_btn = document.getElementById("group_modify")
+            let save_modify_btn = document.getElementById("group_save")
+            modify_btn.style.display = "inline-block"
+            save_modify_btn.style.display = "none"
+        }
+
+        const create_input = (student_id) => {
+            let trId = "block-" + student_id
+            let trElement = document.getElementById(trId);
+            let tdElements = trElement.getElementsByTagName("td");
+
+            for (let i = 0; i < tdElements.length; i++) {
+                if (tdElements[i].id === "default") continue;
+                let inputElement = document.createElement("input");
+                inputElement.value = tdElements[i].innerText;
+                inputElement.className = "form-control edit-table-item"
+                tdElements[i].innerHTML = "";
+                tdElements[i].appendChild(inputElement);
+            }
+        }
+
+        const begin_modify_student = (student_id) => {
+            create_input(student_id)
+            let modify_btn = document.getElementById("modify_" + student_id)
+            let save_modify_btn = document.getElementById("save_" + student_id)
+            modify_btn.style.display = "none"
+            save_modify_btn.style.display = "inline-block"
+        }
+
+        const get_modify_student_detail = (student_id) => {
+            let trId = "block-" + student_id
+            let trElement = document.getElementById(trId);
+            let tdElements = trElement.getElementsByTagName("td");
+            let new_student = { "id": student_id };
+            for (var i = 0; i < tdElements.length; i++) {
+                if (tdElements[i].id === "default") continue;
+                var inputElement = tdElements[i].querySelector("input");
+                var inputValue = inputElement.value;
+                new_student[tdElements[i].id] = inputValue
+                tdElements[i].removeChild(inputElement);
+                tdElements[i].innerHTML = inputElement.value;
+            }
+            return new_student
+        }
+
+        const save_modify_student = (student_id) => {
+            let new_student = get_modify_student_detail(student_id)
+            let modify_btn = document.getElementById("modify_" + student_id)
+            let save_modify_btn = document.getElementById("save_" + student_id)
+            modify_btn.style.display = "inline-block"
+            save_modify_btn.style.display = "none"
+
+            $.ajax({
+                url: '/modify_student',
+                type: 'POST',
+                data: JSON.stringify(new_student),
+                dataType: 'json',
+                success: function (res) {
+                    console.log("success")
+                    window.alert(res['message'])
+                    pull_page(current_page)
+                },
+                error: function (res) {
+                    console.log("error")
+                }
+            })
+        }
+
+        const delete_student = (student_id) => {
+            $.ajax({
+                url: '/delete_student',
+                type: 'POST',
+                data: JSON.stringify({
+                    student_id: student_id
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    console.log("success")
+                    window.alert(res['message'])
+                    pull_page(current_page)
+                },
+                error: function (res) {
+                    console.log("error")
+                }
+            })
+        }
+
+        const delete_some_students = () => {
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let student_list = Array.from(checkboxes).map(function (checkbox) {
+                return checkbox.value;
+            });
+            let res = window.confirm("确定删除编号为 " + student_list + "的学生吗？")
+            if (res) {
+                $.ajax({
+                    url: '/delete_some_students',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        student_list: student_list
+                    }),
+                    dataType: 'json',
+                    success: function (res) {
+                        console.log("success")
+                        window.alert(res['message'])
+                        pull_page(current_page)
+                    },
+                    error: function (res) {
+                        console.log("error")
+                    }
+                })
+            }
+        }
+
+        const click_page = (delta) => {
+            page = current_page + delta
+            let max_pages = parseInt(Math.ceil(tot_len / itemsPerPage));
+            if (page >= 1 && page <= max_pages) {
+                pull_page(page);
+            }
+        }
+        const set_page = (page) => {
+            let max_pages = parseInt(Math.ceil(tot_len / itemsPerPage));
+            if (page >= 1 && page <= max_pages) {
+                pull_page(page);
+            }
+        }
+
+        const udpate_pages = () => {
+            let max_pages = parseInt(Math.ceil(tot_len / itemsPerPage));
+            let pagination = document.getElementById('pagination')
+
+            pagination.innerHTML = ''
+            let tmp = '<li class="page-item" onclick="set_page(1)"><a class="page-link" href="#">«</a></li>'
+            tmp += '<li class="page-item" onclick="click_page(-1)"><a class="page-link" href="#">‹</a></li>'
+            for (let i = current_page - 2; i <= current_page + 2; i++) {
+                if (i >= 1 && i <= max_pages) {
+                    if (i === current_page)
+                        tmp += '<li class="page-item active" onclick="click_page(' + (i - current_page) + '")><a class="page-link" href="#">' + i + '</a></li>'
+                    else
+                        tmp += '<li class="page-item" onclick="click_page(' + (i - current_page) + ')"><a class="page-link" href="#">' + i + '</a></li>'
+                }
+            }
+            tmp += '<li class="page-item" onclick="click_page(1)"><a class="page-link" href="#">›</a></li>'
+            tmp += '<li class="page-item" onclick="set_page(' + max_pages + ')"><a class="page-link" href="#">»</a></li>'
+            pagination.innerHTML = tmp
+        }
+
+        const update_students = () => {
+            display.innerHTML = ''
+            let displayHTML = ''
+            for (let student of students) {
+                displayHTML +=
+                    '<tr id="block-' + student['学生编号'] + '">' +
+                    '<th scope="row"><div class="form-check"><input class="form-check-input" type="checkbox" value=' + student['学生编号'] + ' id="flexCheckDefault"><label class="form-check-label" for="flexCheckDefault">'
+                    + student['学生编号'] + '</label></div>' + '</th>' +
+                    '<td id="name">' + student['姓名'] + '</td>' +
+                    '<td id="sex">' + student['性别'] + '</td>' +
+                    '<td id="age">' + student['年龄'] + '</td>' +
+                    '<td id="origin">' + student['出生地'] + '</td>' +
+                    '<td id="profession_id">' + student['职业编号'] + '</td>' +
+                    '<td id="default">' + student['职业'] + '</td>' +
+                    '<td id="default">' +
+                    '<button type="button" class="btn btn-outline-warning btn-big" id="modify_' + student['学生编号'] + '" onclick = begin_modify_student(' + student['学生编号'] + ')>修改</button>' +
+                    '<button type="button" class="btn btn-outline-success btn-big none-btn" id="save_' + student['学生编号'] + '" onclick = save_modify_student(' + student['学生编号'] + ')>保存</button>' +
+                    '</td>' +
+                    '<td id="default">' + '<button type="button" class="btn btn-outline-danger btn-big" onclick=delete_student(' + student['学生编号'] + ')>删除</button>' + '</td>' +
+                    '<tr>'
+            }
+            display.innerHTML = displayHTML
+        }
+
+        const pull_page = (page) => {
+            current_page = page
+            $.ajax({
+                url: '/get_students_by_page',
+                type: 'POST',
+                data: JSON.stringify({
+                    page: page
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    if (res['error_message'] === 'success') {
+                        console.log("success")
+                        students = res['students']
+                        tot_len = res['length']
+                        update_students()
+                        udpate_pages()
+                    } else {
+                        return pull_page(page)
+                    }
+                },
+                error: function (res) {
+                    console.log("error")
+                }
+            })
+        }
+
+        pull_page(current_page)
+
+
+        const logout = () => {
+            $.ajax({
+                url: '/logout',
+                type: 'POST',
+                data: JSON.stringify({
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    console.log(res);
+                    window.location.replace("/")
+                },
+                error: function (res) {
+                    console.log("error")
+                }
+            })
+        }
+    </script>
+</body>
+
+
+</html>

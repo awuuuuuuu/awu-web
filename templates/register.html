@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/dist/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/login_register.css">
+
+    <script src="../static/dist/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/dist/jquery/dist/jquery.min.js"></script>
+    <script src="../static/dist/jigsaw.min.js"></script>
+
+    <title>awu</title>
+</head>
+
+<body>
+    <div class="cover">
+        <video src="../static/audio/background.mp4" class="backend-vedio" autoplay="autoplay" loop="loop"
+            muted="muted"></video>
+        <div class="card register-card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="username" class="form-label">账号：</label>
+                    <input type="text" class="form-control" id="username" placeholder="用户名长度为2~8个字符">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码：</label>
+                    <input type="password" class="form-control" id="password" placeholder="密码长度为6~18个字符">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmedPassword" class="form-label">确认密码：</label>
+                    <input type="password" class="form-control" id="confirmedPassword" placeholder="两次密码应一致">
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">邮箱：</label>
+                    <input type="email" class="form-control" id="email" aria-describedby="emailHelp"
+                        placeholder="请输入合法的注册邮箱">
+                </div>
+                <div id="captcha"></div>
+                <div class="mb-3" id="vcodeBody" style="display: none;">
+                    <label for="verificationCode" class="form-label">验证码：</label>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" id="verificationCode">
+                        </div>
+                        <div class="col">
+                            <button class="btn btn-outline-primary" onclick="sendVerificationCode()"
+                                id="sendVerificationCodeBtn">发送验证码</button>
+                            <div id="sendVerificationCodeSuccessLabel">验证码发送成功</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-outline-primary register-btn" onclick="register()">注册</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let email = document.getElementById('email')
+        let vcodeBody = document.getElementById('vcodeBody')
+        let captcha = document.getElementById('captcha')
+        let username = document.getElementById('username')
+        let password = document.getElementById('password')
+        let confirmedPassword = document.getElementById('confirmedPassword')
+        let verificationCode = document.getElementById('verificationCode')
+        let sendVerificationCodeBtn = document.getElementById('sendVerificationCodeBtn')
+        let sendVerificationCodeSuccessLabel = document.getElementById('sendVerificationCodeSuccessLabel')
+        let captcha_flag = 0
+
+        const register = () => {
+            if (!(username.value.length >= 2 && username.value.length <= 6)) {
+                window.alert("用户名长度为2~8个字符")
+                return
+            }
+            var reg = /^[A-Za-z0-9\u4e00-\u9fa5]+$/
+            if (!reg.test(username.value)) {
+                window.alert("用户名由字母、数字或者汉字构成")
+                return
+            }
+            if (!(password.value.length >= 6 && password.value.length <= 18)) {
+                window.alert("密码长度为6~18个字符")
+                return
+            }
+            reg = /^[A-Za-z\d@$!%*?&]+$/
+            if (!reg.test(password.value)) {
+                window.alert("密码由字母和数字和特殊字符构成")
+                return
+            }
+            if (password.value !== confirmedPassword.value) {
+                window.alert("两次密码不一致")
+                return
+            }
+            reg = /^[0-9a-zA-Z_.-]+[@][0-9a-zA-Z_.-]+([.][a-zA-Z]+){1,2}$/
+            if (!reg.test(email.value)) {
+                window.alert("邮箱不合法")
+                return
+            }
+            if (captcha_flag === 0) {
+                window.alert("请先通过滑动验证码")
+                return
+            }
+
+            if (verificationCode.value.length !== 6) {
+                window.alert("请输入6位验证码")
+                return
+            }
+
+            $.ajax({
+                url: '/Register',
+                type: 'POST',
+                data: JSON.stringify({
+                    'username': username.value,
+                    'password': password.value,
+                    'email': email.value,
+                    'verificationCode': verificationCode.value
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    console.log("success");
+                    console.log(res);
+                    if (res[0].error_message === "success") {
+                        window.alert("注册成功！")
+                        window.location.replace("/login")
+
+                    } else {
+                        window.alert(res)
+                    }
+                },
+                error: function (res) {
+                    console.log("error")
+                    console.log(res);
+                    window.alert("注册失败请稍后再试。")
+                }
+            })
+        }
+
+        const sendVerificationCode = () => {
+            let reg = /^[0-9a-zA-Z_.-]+[@][0-9a-zA-Z_.-]+([.][a-zA-Z]+){1,2}$/
+            if (!reg.test(email.value)) {
+                window.alert("邮箱不合法")
+                return
+            }
+            $.ajax({
+                url: '/sendVerificationCode',
+                type: 'POST',
+                data: JSON.stringify({
+                    'email': email.value
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    if (res[0].error_message === "success") {
+                        console.log("send success")
+                        console.log(res)
+                        sendVerificationCodeBtn.style.display = "none"
+                        sendVerificationCodeSuccessLabel.style.display = "inline-block"
+                    } else {
+                        window.alert("发送失败请稍后再试。")
+                    }
+                },
+                error: function (res) {
+                    console.log("error")
+                    console.log(res);
+                    window.alert("发送失败请稍后再试。")
+                }
+            })
+        }
+
+
+        jigsaw.init({
+            el: document.getElementById('captcha'),
+            onSuccess: function () {
+                //验证成功的回调
+                captcha_flag = 1
+                captcha.style.display = "none"
+                vcodeBody.style.display = "block"
+            },
+        })
+    </script>
+</body>
+
+</html>

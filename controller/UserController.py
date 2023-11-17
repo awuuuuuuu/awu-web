@@ -1,6 +1,4 @@
-import json
-
-from flask import Blueprint, render_template, request, session
+from flask import Blueprint, render_template, request, session, jsonify
 
 from common.utils import send_email, gen_email_code
 
@@ -30,9 +28,9 @@ def sendVerificationCode():
         send_email(email, code)
         session["ecode"] = code
         print("已发送， 验证码：" + session.get("ecode"))
-        return json.dumps([{"error_message": "success"}], ensure_ascii=False)
+        return jsonify(error_message="success")
     except:
-        return json.dumps([{"error_message": "error"}], ensure_ascii=False)
+        return jsonify(error_message="error")
 
 
 @UserController.route("/Register", methods=["POST", "GET"])
@@ -44,18 +42,19 @@ def Register():
     verificationCode = data["verificationCode"]
 
     if verificationCode != session.get("ecode"):
-        return json.dumps([{"error_message": "验证码错误"}], ensure_ascii=False)
+        return jsonify(error_message="验证码错误")
 
-    sha1 = hashlib.sha1()
-    sha1.update(password.encode("utf-8"))
-    password = sha1.hexdigest()
+    sha256 = hashlib.sha256()
+    sha256.update(password.encode("utf-8"))
+    password = sha256.hexdigest()
+    print(password)
 
     try:
         user = User()
         user.add_one_user(username, password, email)
-        return json.dumps([{"error_message": "success"}], ensure_ascii=False)
+        return jsonify(error_message="success")
     except:
-        return json.dumps([{"error_message": "数据库拒绝插入"}], ensure_ascii=False)
+        return jsonify(error_message="数据库拒绝插入")
 
 
 @UserController.route("/Login", methods=["POST", "GET"])
@@ -64,27 +63,26 @@ def Login():
     username = data["username"]
     password = data["password"]
 
-    sha1 = hashlib.sha1()
-    sha1.update(password.encode("utf-8"))
-    password = sha1.hexdigest()
+    sha256 = hashlib.sha256()
+    sha256.update(password.encode("utf-8"))
+    password = sha256.hexdigest()
 
     user = User().find_user_by_username(username)
-    if user.username == username and user.password == password:
+    if user and user.username == username and user.password == password:
         session['is_login'] = 'true'
         session['userid'] = user.id
         session['username'] = user.username
-        return json.dumps([{"error_message": "success"}], ensure_ascii=False)
+        return jsonify(error_message="success")
     else:
-        return json.dumps([{"error_message": "数据库拒绝插入"}], ensure_ascii=False)
+        return jsonify(error_message="用户名或者密码错误")
 
 
 @UserController.route("/logout", methods=["POST", "GET"])
 def logout():
-    print("777")
     try:
         session.pop('is_login')
         session.pop('userid')
         session.pop('username')
-        return json.dumps([{"error_message": "success"}], ensure_ascii=False)
+        return jsonify(error_message="success")
     except:
-        return json.dumps([{"error_message": "数据库拒绝插入"}], ensure_ascii=False)
+        return jsonify(error_message="error")

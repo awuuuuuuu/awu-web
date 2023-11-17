@@ -101,6 +101,66 @@
                             </tbody>
                         </table>
                         <nav aria-label="...">
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#addStudentModal">
+                                添加学生
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="addStudentModal" data-bs-backdrop="static"
+                                data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="staticBackdropLabel">添加学生</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <div class="mb-3">
+                                                <label for="nameInput" class="form-label">姓名</label>
+                                                <input type="text" class="form-control" id="student_name">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="sexRadio" class="form-label">性别</label>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="student_sex"
+                                                        id="sexRadio1" value="男">
+                                                    <label class="form-check-label" for="inlineRadio1">男</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="student_sex"
+                                                        id="sexRadio2" value="女">
+                                                    <label class="form-check-label" for="inlineRadio2">女</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="ageInput" class="form-label">年龄</label>
+                                                <input type="text" class="form-control" id="student_age">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="originInput" class="form-label">出生地</label>
+                                                <input type="text" class="form-control" id="student_origin">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="professionInput" class="form-label">职业</label>
+                                                <input type="text" class="form-control" id="student_profession">
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">取消</button>
+                                            <button type="button" class="btn btn-primary"
+                                                onclick="add_student()">添加</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <ul class="pagination" style="float: right;" id="pagination">
                             </ul>
                         </nav>
@@ -117,6 +177,62 @@
         let itemsPerPage = 10
         let tot_len
         let display = document.getElementById("display")
+
+
+        const add_student = () => {
+            let name = document.getElementById('student_name')
+            let sex = document.querySelector('input[name="student_sex"]:checked')
+            let age = document.getElementById('student_age')
+            let origin = document.getElementById('student_origin')
+            let profession = document.getElementById('student_profession')
+            console.log(name.value);
+            if (name.value.length === 0) {
+                window.alert("请输入姓名")
+                return;
+            }
+            if (sex === null || sex.value.length === 0) {
+                window.alert("请选择性别")
+                return;
+            }
+            if (age.value.length === 0) {
+                window.alert("请输入年龄")
+                return;
+            }
+            if (origin.value.length === 0) {
+                window.alert("请输入出生的")
+                return;
+            }
+            if (profession.value.length === 0) {
+                window.alert("请输入职业")
+                return;
+            }
+            if (!(name.value.length >= 2 && name.value.length <= 4)) {
+                window.alert("姓名的长度位2~4")
+                return;
+            }
+
+            $.ajax({
+                url: '/add_student',
+                type: 'POST',
+                data: JSON.stringify({
+                    name: name.value,
+                    sex: sex.value,
+                    age: parseInt(age.value),
+                    origin: origin.value,
+                    profession: profession.value
+                }),
+                dataType: 'json',
+                success: function (res) {
+                    console.log("success")
+                    window.alert(res['message'])
+                    $('#addStudentModal').modal('hide');
+                    pull_page(current_page)
+                },
+                error: function (res) {
+                    console.log("error")
+                }
+            })
+        }
 
         const modify_some_students = () => {
             let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
@@ -319,8 +435,8 @@
                     '<td id="sex">' + student['性别'] + '</td>' +
                     '<td id="age">' + student['年龄'] + '</td>' +
                     '<td id="origin">' + student['出生地'] + '</td>' +
-                    '<td id="profession_id">' + student['职业编号'] + '</td>' +
-                    '<td id="default">' + student['职业'] + '</td>' +
+                    '<td id="default">' + student['职业编号'] + '</td>' +
+                    '<td id="profession">' + student['职业'] + '</td>' +
                     '<td id="default">' +
                     '<button type="button" class="btn btn-outline-warning btn-big" id="modify_' + student['学生编号'] + '" onclick = begin_modify_student(' + student['学生编号'] + ')>修改</button>' +
                     '<button type="button" class="btn btn-outline-success btn-big none-btn" id="save_' + student['学生编号'] + '" onclick = save_modify_student(' + student['学生编号'] + ')>保存</button>' +

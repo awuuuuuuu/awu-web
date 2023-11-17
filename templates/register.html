@@ -118,8 +118,7 @@
                 dataType: 'json',
                 success: function (res) {
                     console.log("success");
-                    console.log(res);
-                    if (res[0].error_message === "success") {
+                    if (res.error_message === "success") {
                         window.alert("注册成功！")
                         window.location.replace("/login")
 
@@ -129,7 +128,6 @@
                 },
                 error: function (res) {
                     console.log("error")
-                    console.log(res);
                     window.alert("注册失败请稍后再试。")
                 }
             })
@@ -149,9 +147,8 @@
                 }),
                 dataType: 'json',
                 success: function (res) {
-                    if (res[0].error_message === "success") {
+                    if (res.error_message === "success") {
                         console.log("send success")
-                        console.log(res)
                         sendVerificationCodeBtn.style.display = "none"
                         sendVerificationCodeSuccessLabel.style.display = "inline-block"
                     } else {
@@ -160,7 +157,6 @@
                 },
                 error: function (res) {
                     console.log("error")
-                    console.log(res);
                     window.alert("发送失败请稍后再试。")
                 }
             })

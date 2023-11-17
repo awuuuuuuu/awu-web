@@ -41,3 +41,9 @@
 .none-btn{
     display: none;
 }
+.form-check-input {
+    margin-left: 10px !important; 
+}
+.form-check-label {
+    margin-left: 10px !important; 
+}

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, session, request, jsonify
-from sqlalchemy.orm import exc
 
 from model.Student import Student, Profession
 from common.database import *
@@ -17,24 +16,54 @@ def studentIndex():
         return render_template("login.html")
 
 
+@StudentController.route('/add_student', methods=['POST', 'GET'])
+def add_student():
+    data = request.get_json(force=True)
+
+    name = data.get('name')
+    sex = data.get('sex')
+    age = data.get('age')
+    origin = data.get('origin')
+    profession_name = data.get('profession')
+    print(data)
+
+    try:
+        profession = db_session.query(Profession).filter_by(profession=profession_name).first()
+        if not profession:
+            profession = Profession(profession=profession_name)
+            db_session.add(profession)
+            db_session.commit()
+
+        new_student = Student(name=name, sex=sex, age=age, origin=origin, profession_id=profession.id)
+        db_session.add(new_student)
+        db_session.commit()
+        return jsonify(message='Student added successfully'), 201
+    except Exception as e:
+        db_session.rollback()
+        return jsonify(message=f'Error updating student: {str(e)}'), 500
+
+
 @StudentController.route('/modify_student', methods=['POST', 'GET'])
 def modify_student():
     data = request.get_json(force=True)
     student = db_session.query(Student).get(data['id'])
-    profession = db_session.query(Profession).get(data['profession_id'])
+    profession_name = data['profession']
 
     if not student:
         return jsonify(message='Student not found'), 404
 
+    profession = db_session.query(Profession).filter_by(profession=profession_name).first()
     if not profession:
-        return jsonify(message='Profession not found'), 404
+        profession = Profession(profession=profession_name)
+        db_session.add(profession)
+        db_session.commit()
 
     try:
         student.name = data['name']
         student.sex = data['sex']
         student.age = data['age']
         student.origin = data['origin']
-        student.profession_id = data['profession_id']
+        student.profession_id = profession.id
 
         db_session.commit()
         return jsonify(message='Student updated successfully'), 200
@@ -48,11 +77,13 @@ def modify_some_students():
     data = request.get_json(force=True)
 
     for id, new_student in data.items():
-        print(id)
-        print(new_student)
-        profession = db_session.query(Profession).get(new_student['profession_id'])
+        profession_name = new_student['profession']
+        profession = db_session.query(Profession).filter_by(profession=profession_name).first()
         if not profession:
-            return jsonify(message=f'Error updating students: {new_student, id},Profession not found'), 404
+            profession = Profession(profession=profession_name)
+            db_session.add(profession)
+            db_session.commit()
+        new_student['profession_id'] = profession.id
 
     print(data)
     try:
@@ -121,7 +152,8 @@ def get_students_by_page():
     end_id = 10 * page
 
     try:
-        students_and_professions = db_session.query(Student, Profession).join(Profession).order_by(Student.id).all()
+        students_and_professions = db_session.query(Student, Profession).join(Profession).order_by(
+            Student.id.desc()).all()
         students = []
         for i in range(start_id, min(end_id, len(students_and_professions))):
             student, profession = students_and_professions[i]
@@ -138,7 +170,7 @@ def get_students_by_page():
 
 @StudentController.route("/get_all_students", methods=["POST", "GET"])
 def get_all_students():
-    students_and_professions = db_session.query(Student, Profession).join(Profession).order_by(Student.id).all()
+    students_and_professions = db_session.query(Student, Profession).join(Profession).order_by(Student.id.desc()).all()
     student_list = [
         {'学生编号': student.id, '姓名': student.name, '性别': student.sex, '年龄': student.age,
          '出生地': student.origin,

@@ -1,9 +1,8 @@
 
-spython:S1192:"VDefine a constant instead of duplicating this literal "æ•°æ®åº“æ‹’ç»æ’å…¥" 3 times.(™ÁˆŒÿÿÿÿÿ
-wpython:S1542"ZRename function "sendVerificationCode" to match the regular expression ^[a-z_][a-z0-9_]*$.(ƒş¥Òúÿÿÿÿ
-Tpython:S5754""<Specify an exception class to catch or reraise the exception(ˆÊÉ·
-xpython:S117,"aRename this local variable "verificationCode" to match the regular expression ^[_a-z][a-z0-9_]*$.(÷Ú€À
-kpython:S1542'"NRename function "Register" to match the regular expression ^[a-z_][a-z0-9_]*$.(¨²óÿÿÿÿÿ
-Tpython:S57549"<Specify an exception class to catch or reraise the exception(ˆÊÉ·
-hpython:S1542>"KRename function "Login" to match the regular expression ^[a-z_][a-z0-9_]*$.(Â¹¶·üÿÿÿÿ
-Tpython:S5754Y"<Specify an exception class to catch or reraise the exception(ˆÊÉ·
+wpython:S1542"ZRename function "sendVerificationCode" to match the regular expression ^[a-z_][a-z0-9_]*$.(ƒş¥Òúÿÿÿÿ
+Tpython:S5754 "<Specify an exception class to catch or reraise the exception(ˆÊÉ·
+xpython:S117*"aRename this local variable "verificationCode" to match the regular expression ^[_a-z][a-z0-9_]*$.(÷Ú€À
+kpython:S1542%"NRename function "Register" to match the regular expression ^[a-z_][a-z0-9_]*$.(¨²óÿÿÿÿÿ
+Tpython:S57548"<Specify an exception class to catch or reraise the exception(ˆÊÉ·
+hpython:S1542="KRename function "Login" to match the regular expression ^[a-z_][a-z0-9_]*$.(Â¹¶·üÿÿÿÿ
+Tpython:S5754W"<Specify an exception class to catch or reraise the exception(ˆÊÉ·

@@ -69,13 +69,13 @@
                 dataType: 'json',
                 success: function (res) {
                     console.log(res);
-                    if (res[0].error_message === "success") {
+                    if (res.error_message === "success") {
                         console.log("success");
                         window.alert("登录成功")
                         window.location.replace("/")
 
                     } else {
-                        window.alert("登录失败请稍后再试。")
+                        window.alert(res["error_message"])
                     }
                 },
                 error: function (res) {

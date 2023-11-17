@@ -5,7 +5,7 @@ class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, Sequence('user_id_seq'), primary_key=True)
     username = Column(String(50))
-    password = Column(String(50))
+    password = Column(String(100))
     email = Column(String(50))
 
     def add_one_user(self, username, password, email):

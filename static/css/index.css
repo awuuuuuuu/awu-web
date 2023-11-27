@@ -41,9 +41,27 @@
 .none-btn{
     display: none;
 }
+
 .form-check-input {
     margin-left: 10px !important; 
 }
+
 .form-check-label {
     margin-left: 10px !important; 
+}
+
+#jump-page-input{
+    display: inline;
+    float: right;
+    width: 3rem;
+}
+
+#jump-page-btn{
+    float: right;
+    margin: 0 2.5px;
+    margin-top: -2px;
+}
+.float-right{
+    float: right;
+    margin: 0 3px;
 }

@@ -47,7 +47,6 @@ def Register():
     sha256 = hashlib.sha256()
     sha256.update(password.encode("utf-8"))
     password = sha256.hexdigest()
-    print(password)
 
     try:
         user = User()

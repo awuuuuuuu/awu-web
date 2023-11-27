@@ -1,5 +1,0 @@
-
-fpython:S2208"GImport only needed names or import the module and then use its members.(ÞÛÖŸ8Úª£ß½1
-qpython:S1542"RRename function "studentIndex" to match the regular expression ^[a-z_][a-z0-9_]*$.(„ç»Œ8Ûª£ß½1
-[python:S5754"<Specify an exception class to catch or reraise the exception(ˆÊÉ·8Ûª£ß½1
-Jpython:S1481¦"%Remove the unused local variable "e".(¼–¯¸ÿÿÿÿÿ8Ûª£ß½1

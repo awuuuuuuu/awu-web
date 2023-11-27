@@ -161,14 +161,19 @@
                                 </div>
                             </div>
 
-                            <ul class="pagination" style="float: right;" id="pagination">
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
 
+                            <ul class="pagination float-right" id="pagination"></ul>
+                            <span class="float-right"> 页 </span>
+                            <input type="text" id="jump-page-input">
+                            <button type="button" class="btn btn-secondary" id="jump-page-btn" onclick="jump_page()">转到
+                            </button>
+                    </div>
+                    </nav>
+                </div>
             </div>
+
         </div>
+    </div>
     </div>
 
     <script>
@@ -185,42 +190,28 @@
             let age = document.getElementById('student_age')
             let origin = document.getElementById('student_origin')
             let profession = document.getElementById('student_profession')
-            console.log(name.value);
-            if (name.value.length === 0) {
-                window.alert("请输入姓名")
-                return;
+
+            console.log(parseInt(age.value));
+            console.log(age.value);
+            let student = {
+                id: "新增",
+                name: name.value,
+                sex: sex.value,
+                age: age.value,
+                origin: origin.value,
+                profession: profession.value
             }
-            if (sex === null || sex.value.length === 0) {
-                window.alert("请选择性别")
-                return;
-            }
-            if (age.value.length === 0) {
-                window.alert("请输入年龄")
-                return;
-            }
-            if (origin.value.length === 0) {
-                window.alert("请输入出生的")
-                return;
-            }
-            if (profession.value.length === 0) {
-                window.alert("请输入职业")
-                return;
-            }
-            if (!(name.value.length >= 2 && name.value.length <= 4)) {
-                window.alert("姓名的长度位2~4")
+
+            let result = checkOneStudent(student);
+            if (result.length !== 0) {
+                window.alert(result)
                 return;
             }
 
             $.ajax({
                 url: '/add_student',
                 type: 'POST',
-                data: JSON.stringify({
-                    name: name.value,
-                    sex: sex.value,
-                    age: parseInt(age.value),
-                    origin: origin.value,
-                    profession: profession.value
-                }),
+                data: JSON.stringify(student),
                 dataType: 'json',
                 success: function (res) {
                     console.log("success")
@@ -230,6 +221,7 @@
                 },
                 error: function (res) {
                     console.log("error")
+                    window.alert("新增学生失败")
                 }
             })
         }
@@ -239,6 +231,10 @@
             let student_list = Array.from(checkboxes).map(function (checkbox) {
                 return checkbox.value;
             });
+            if (student_list.length === 0) {
+                window.alert("至少勾选一个学生!");
+                return;
+            }
             for (let id of student_list) {
                 create_input(id)
             }
@@ -248,32 +244,83 @@
             save_modify_btn.style.display = "inline-block"
         }
 
+        const checkOneStudent = (student) => {
+            let res = "";
+
+            var chineseNameRegex = /^[\u4e00-\u9fa5]+$/;
+            if (!(student.name.length >= 2 && student.name.length <= 4)) {
+                res += student.id + "的学生姓名长度 应为2~4\n";
+            }
+            else if (!chineseNameRegex.test(student.name))
+                res += student.id + "的学生姓名应由汉字组成\n";
+
+            if (student.sex !== "男" && student.sex !== "女") {
+                res += student.id + "的学生性别应为男/女\n";
+            }
+
+            var ageRegex = /^\d+$/;
+            if (student.age.length === 0) {
+                res += student.id + "的学生年龄不能为空\n";
+            }
+            else if (!ageRegex.test(student.age)) {
+                res += student.id + "的学生年龄应由数字组成\n";
+            }
+            else if (!(student.age >= 18 && student.age.length <= 110)) {
+                res += student.id + "的学生年龄应为 18~110\n";
+            }
+
+            if (student.origin.length === 0) {
+                res += student.id + "的学生出生地不能为空\n";
+            }
+
+            if (student.profession.length === 0) {
+                res += student.id + "的学生职业不能为空\n";
+            }
+            return res;
+        }
+
+        const checkSomeStudent = (student_list) => {
+            let res = "";
+            for (let i in student_list)
+                res += checkOneStudent(student_list[i]);
+            return res;
+        }
+
         const save_some_students = () => {
             let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
             let student_list = Array.from(checkboxes).map(function (checkbox) {
                 return checkbox.value;
             });
+
             let res = window.confirm("确定修改编号为 " + student_list + "的学生吗？")
             if (res) {
                 let new_student_list = {}
                 for (let id of student_list)
                     new_student_list[id] = get_modify_student_detail(id)
 
-                console.log(new_student_list);
-                $.ajax({
-                    url: '/modify_some_students',
-                    type: 'POST',
-                    data: JSON.stringify(new_student_list),
-                    dataType: 'json',
-                    success: function (res) {
-                        console.log("success")
-                        window.alert(res['message'])
-                        pull_page(current_page)
-                    },
-                    error: function (res) {
-                        console.log("error")
-                    }
-                })
+                let result = checkSomeStudent(new_student_list);
+                if (result.length === 0) {
+                    $.ajax({
+                        url: '/modify_some_students',
+                        type: 'POST',
+                        data: JSON.stringify(new_student_list),
+                        dataType: 'json',
+                        success: function (res) {
+                            console.log("success")
+                            window.alert(res['message'])
+                            pull_page(current_page)
+                        },
+                        error: function (res) {
+                            console.log("error")
+                        }
+                    })
+                } else {
+                    window.alert(result);
+                    return;
+                }
+            }
+            else {
+                pull_page(current_page)
             }
 
             let modify_btn = document.getElementById("group_modify")
@@ -315,14 +362,19 @@
                 var inputElement = tdElements[i].querySelector("input");
                 var inputValue = inputElement.value;
                 new_student[tdElements[i].id] = inputValue
-                tdElements[i].removeChild(inputElement);
-                tdElements[i].innerHTML = inputElement.value;
+                // tdElements[i].removeChild(inputElement);
+                // tdElements[i].innerHTML = inputElement.value;
             }
             return new_student
         }
 
         const save_modify_student = (student_id) => {
             let new_student = get_modify_student_detail(student_id)
+            let result = checkOneStudent(new_student);
+            if (result.length !== 0) {
+                window.alert(result);
+                return;
+            }
             let modify_btn = document.getElementById("modify_" + student_id)
             let save_modify_btn = document.getElementById("save_" + student_id)
             modify_btn.style.display = "inline-block"
@@ -396,10 +448,27 @@
                 pull_page(page);
             }
         }
+
         const set_page = (page) => {
             let max_pages = parseInt(Math.ceil(tot_len / itemsPerPage));
             if (page >= 1 && page <= max_pages) {
                 pull_page(page);
+            }
+        }
+
+        const jump_page = () => {
+            let input = document.getElementById("jump-page-input");
+            let page = parseInt(input.value);
+            input.value = ''
+            if (page.length === 0) {
+                window.alert("页码不能为空");
+                return;
+            }
+            let max_pages = parseInt(Math.ceil(tot_len / itemsPerPage));
+            if (page >= 1 && page <= max_pages) {
+                pull_page(page);
+            } else {
+                window.alert("页码不合法");
             }
         }
 
@@ -408,7 +477,8 @@
             let pagination = document.getElementById('pagination')
 
             pagination.innerHTML = ''
-            let tmp = '<li class="page-item" onclick="set_page(1)"><a class="page-link" href="#">«</a></li>'
+            let tmp = ''
+            tmp += '<li class="page-item" onclick="set_page(1)"><a class="page-link" href="#">«</a></li>'
             tmp += '<li class="page-item" onclick="click_page(-1)"><a class="page-link" href="#">‹</a></li>'
             for (let i = current_page - 2; i <= current_page + 2; i++) {
                 if (i >= 1 && i <= max_pages) {
@@ -458,7 +528,6 @@
                 dataType: 'json',
                 success: function (res) {
                     if (res['error_message'] === 'success') {
-                        console.log("success")
                         students = res['students']
                         tot_len = res['length']
                         update_students()

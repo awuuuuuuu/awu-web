@@ -19,7 +19,7 @@ def studentIndex():
 @StudentController.route('/add_student', methods=['POST', 'GET'])
 def add_student():
     data = request.get_json(force=True)
-
+    print(data)
     name = data.get('name')
     sex = data.get('sex')
     age = data.get('age')

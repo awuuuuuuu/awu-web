@@ -1,4 +1,4 @@
-前后端不分离的Flask项目
+Flask project that does not separate the front-end and backend
 
 database: MySQL
 

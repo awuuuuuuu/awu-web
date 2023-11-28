@@ -14,12 +14,9 @@
 </head>
 
 <body>
-    <script>
-
-    </script>
     <div class="cover">
-        <video src="../static/audio/background.mp4" class="backend-vedio" autoplay="autoplay" loop="loop"
-            muted="muted"></video>
+        <video src="../static/audio/background.mp4" class="backend-vedio" autoplay="autoplay" loop="loop" muted="muted"
+            style="height: 116%;"></video>
 
         <div class="card">
             <div class="card-body">
@@ -75,6 +72,28 @@
 
                 <div class="card">
                     <div class="card-body">
+                        <div class="row">
+                            <div class="col"></div>
+                            <div class="col">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">按照</span>
+                                    <div class="search-select-div">
+                                        <select class="form-select search-select" id="search-select">
+                                            <option selected value="id">编号</option>
+                                            <option value="name">姓名</option>
+                                            <option value="sex">性别</option>
+                                            <option value="age">年龄</option>
+                                            <option value="origin">出生地</option>
+                                            <option value="profession_id">职业编号</option>
+                                            <option value="profession">职业</option>
+                                        </select>
+                                    </div>
+
+                                    <input type="text" class="form-control" id="search-input">
+                                    <button type="button" class="btn btn-info" onclick="search()">搜索</button>
+                                </div>
+                            </div>
+                        </div>
                         <table class="table border-success table-success table-striped table-hover ">
                             <thead class="text-center">
                                 <tr>
@@ -163,10 +182,12 @@
 
 
                             <ul class="pagination float-right" id="pagination"></ul>
-                            <span class="float-right"> 页 </span>
-                            <input type="text" id="jump-page-input">
+
+                            <span class="input-group-text float-right">页</span>
+                            <input type="text" class="form-control" id="jump-page-input">
                             <button type="button" class="btn btn-secondary" id="jump-page-btn" onclick="jump_page()">转到
                             </button>
+
                     </div>
                     </nav>
                 </div>
@@ -178,11 +199,24 @@
 
     <script>
         let current_page = 1;
+        let key = document.getElementById("search-input")
+        let type = document.getElementById("search-select")
+        let is_search = false
         let students = []
         let itemsPerPage = 10
         let tot_len
         let display = document.getElementById("display")
 
+        const search = () => {
+            if (key.value.length === 0) {
+                is_search = false
+                pull_page(current_page);
+                return;
+            }
+            is_search = true
+            current_page = 1
+            pull_page(current_page)
+        }
 
         const add_student = () => {
             let name = document.getElementById('student_name')
@@ -265,7 +299,7 @@
             else if (!ageRegex.test(student.age)) {
                 res += student.id + "的学生年龄应由数字组成\n";
             }
-            else if (!(student.age >= 18 && student.age.length <= 110)) {
+            else if (!(student.age >= 18 && student.age <= 110)) {
                 res += student.id + "的学生年龄应为 18~110\n";
             }
 
@@ -519,20 +553,26 @@
 
         const pull_page = (page) => {
             current_page = page
+
             $.ajax({
                 url: '/get_students_by_page',
                 type: 'POST',
                 data: JSON.stringify({
-                    page: page
+                    page: page,
+                    is_search: is_search,
+                    type: type.value,
+                    key: key.value,
                 }),
                 dataType: 'json',
                 success: function (res) {
                     if (res['error_message'] === 'success') {
+                        console.log("pull page successfully");
                         students = res['students']
                         tot_len = res['length']
                         update_students()
                         udpate_pages()
                     } else {
+                        console.log("fail to pull page, try again");
                         return pull_page(page)
                     }
                 },

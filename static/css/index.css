@@ -58,10 +58,20 @@
 
 #jump-page-btn{
     float: right;
-    margin: 0 2.5px;
-    margin-top: -2px;
+    margin-right:  0.1rem;
 }
+
 .float-right{
     float: right;
-    margin: 0 3px;
+    margin-right:  1rem;
 }
+
+.search-select-div{
+    width: 7rem;
+    margin: 0 0.1rem;
+}
+
+.search-select{
+    text-align: center;
+}
+

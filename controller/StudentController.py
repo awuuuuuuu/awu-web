@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, session, request, jsonify
+from sqlalchemy import func
 
 from model.Student import Student, Profession
 from common.database import *
@@ -19,13 +20,11 @@ def studentIndex():
 @StudentController.route('/add_student', methods=['POST', 'GET'])
 def add_student():
     data = request.get_json(force=True)
-    print(data)
     name = data.get('name')
     sex = data.get('sex')
     age = data.get('age')
     origin = data.get('origin')
     profession_name = data.get('profession')
-    print(data)
 
     try:
         profession = db_session.query(Profession).filter_by(profession=profession_name).first()
@@ -148,22 +147,37 @@ def get_students_by_page():
     data = request.get_json(force=True)
 
     page = int(data['page'])
+    is_search = data['is_search']
+    file_name = data['type']
+    file_value = data['key']
+
     start_id = 10 * (page - 1)
     end_id = 10 * page
 
-    try:
+    students_and_professions = None
+    if is_search and file_name == "profession":
+        students_and_professions = db_session.query(Student, Profession).join(Profession). \
+            filter(getattr(Profession, file_name).ilike(f"%{file_value}%")) \
+            .order_by(Student.id.desc()).all()
+    elif is_search:
+        students_and_professions = db_session.query(Student, Profession).join(Profession). \
+            filter(getattr(Student, file_name).ilike(f"%{file_value}%")) \
+            .order_by(Student.id.desc()).all()
+    else:
         students_and_professions = db_session.query(Student, Profession).join(Profession).order_by(
             Student.id.desc()).all()
+
+    try:
         students = []
         for i in range(start_id, min(end_id, len(students_and_professions))):
             student, profession = students_and_professions[i]
             students.append({'学生编号': student.id, '姓名': student.name, '性别': student.sex, '年龄': student.age,
                              '出生地': student.origin, '职业编号': profession.id, '职业': profession.profession})
-        length = len(db_session.query(Student).all())
+        length = len(students_and_professions)
         db_session.commit()
         db_session.close()
         return jsonify({'students': students, "length": length, "error_message": "success"})
-    except Exception as e:
+    except Exception:
         db_session.rollback()
         return jsonify({"error_message": "error"})
 
